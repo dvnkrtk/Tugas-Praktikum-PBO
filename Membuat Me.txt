@@ -1,0 +1,9 @@
+# Membuka file "Me.txt" dalam mode tulis
+with open("Me.txt", "w") as file:
+    # Menuliskan beberapa baris teks ke dalam file
+    file.write("Nama: Devina Kartika\n")
+    file.write("NIM: 123140036\n")
+    file.write("Prodi: Teknik Informatika\n")
+
+# File akan otomatis ditutup setelah keluar dari blok 
+print("File 'Me.txt' telah dibuat dan beberapa baris teks telah dituliskan")
