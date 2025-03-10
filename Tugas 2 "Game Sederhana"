@@ -1,0 +1,78 @@
+import random
+
+class Robot:
+    def __init__(self, nama, hp, serangan, pertahanan, akurasi_serangan=0.8):
+        self.nama = nama
+        self.hp = hp
+        self.serangan = serangan
+        self.pertahanan = pertahanan
+        self.akurasi_serangan = akurasi_serangan
+
+    def serang_musuh(self, musuh):
+        if random.random() < self.akurasi_serangan:
+            kerusakan = max(0, self.serangan - musuh.pertahanan)
+            musuh.terima_serangan(kerusakan)
+            print(f"{self.nama} menyerang {musuh.nama} dengan {kerusakan} kerusakan!")
+        else:
+            print(f"{self.nama} gagal menyerang {musuh.nama}!")
+
+    def terima_serangan(self, kerusakan):
+        self.hp -= kerusakan
+        if self.hp < 0:
+            self.hp = 0
+
+    def tampilkan_status(self):
+        print(f"{self.nama} [HP: {self.hp}, Serangan: {self.serangan}, Pertahanan: {self.pertahanan}]")
+
+    def is_kalah(self):
+        return self.hp <= 0
+
+class Game:
+    def __init__(self, robot1, robot2):
+        self.robot1 = robot1
+        self.robot2 = robot2
+        self.ronde = 1
+
+    def mainkan(self):
+        while not self.robot1.is_kalah() and not self.robot2.is_kalah():
+            print(f"\n----- Ronde {self.ronde} -----")
+            self.robot1.tampilkan_status()
+            self.robot2.tampilkan_status()
+
+            aksi1 = self.dapatkan_aksi(self.robot1)
+            aksi2 = self.dapatkan_aksi(self.robot2)
+
+            if aksi1 == "3" or aksi2 == "3":
+                break
+
+            if aksi1 == "1":
+                self.robot1.serang_musuh(self.robot2)
+            if aksi2 == "1":
+                self.robot2.serang_musuh(self.robot1)
+
+            self.ronde += 1
+
+        self.tampilkan_pemenang()
+
+    def dapatkan_aksi(self, robot):
+        while True:
+            print("1. Serang, 2. Bertahan, 3. Menyerah")
+            aksi = input(f"{robot.nama}, pilih aksi: ")
+            if aksi in ["1", "2", "3"]:
+                return aksi
+            else:
+                print("Aksi tidak valid!")
+
+    def tampilkan_pemenang(self):
+        if self.robot1.is_kalah():
+            print(f"{self.robot2.nama} menang!")
+        elif self.robot2.is_kalah():
+            print(f"{self.robot1.nama} menang!")
+        else:
+            print("Permainan berakhir!")
+
+# Contoh penggunaan
+robot_a = Robot("Atreus", 900, 10, 5)
+robot_b = Robot("Daedalus", 250, 15, 9)
+game = Game(robot_a, robot_b)
+game.mainkan()
