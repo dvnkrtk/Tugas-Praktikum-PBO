@@ -1,0 +1,54 @@
+import tkinter as tk
+import math
+
+class Calculator:
+    def __init__(self, master):
+        self.master = master
+        self.master.config(bg='lightgreen')
+        master.title("Kalkulator Sederhana")
+        
+        self.entry = tk.Entry(master, width=25, borderwidth=23, font=('times', 14))
+        self.entry.grid(row=0, column=0, columnspan=4, padx=15, pady=15)
+        self.entry.config(bg='lightblue')
+
+        buttons = [
+            '7', '8', '9', 'C',
+            '4', '5', '6', '*',
+            '1', '2', '3', '-',
+            '%', '0', '.', '+',
+            '^', 'log', '/', '='
+        ]
+
+        row_val = 1
+        col_val = 0
+
+        for button in buttons:
+            tk.Button(master, text=button, padx=25, pady=20, font=('times', 12), bg='black', fg='white',
+                      command=lambda b=button: self.click(b)).grid(row=row_val, column=col_val)
+            col_val += 1
+            if col_val > 3:
+                col_val = 0
+                row_val += 1
+
+    def click(self, char):
+        current = self.entry.get()
+        if char == '=':
+            try:
+                result = eval(current)
+                self.entry.delete(0, tk.END)
+                self.entry.insert(0, result)
+            except Exception as e:
+                self.entry.delete(0, tk.END)
+                self.entry.insert(0, 'Error')
+        elif char == 'C':
+            self.entry.delete(0, tk.END)
+        elif char == '^':
+            self.entry.insert(tk.END, '**')
+        elif char == 'log':
+            self.entry.insert(tk.END, 'math.log10(')
+        else:
+            self.entry.insert(tk.END, char)
+
+root = tk.Tk()
+calculator = Calculator(root)
+root.mainloop()
