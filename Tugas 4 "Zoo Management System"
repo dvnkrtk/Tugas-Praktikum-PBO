@@ -1,0 +1,69 @@
+from abc import ABC, abstractmethod
+
+#Abstraksi: Kelas dasar Hewan
+pesan_error_tipe = "Tipe data tidak valid. Harap masukkan tipe yang benar."
+class Hewan(ABC):
+    def __init__(self, nama: str, usia: int):
+        if not isinstance(nama, str) or not nama:
+            raise ValueError("Nama harus berupa string yang tidak kosong.")
+        if not isinstance(usia, int) or usia < 0:
+            raise ValueError("Usia harus berupa bilangan bulat positif.")
+        
+        self._nama = nama  #Enkapsulasi
+        self._usia = usia  #Enkapsulasi
+#Abstractmethod
+    def bersuara(self):
+        pass
+    
+    def info(self):
+        return f"Nama: {self._nama}, Usia: {self._usia}"
+
+#Pewarisan: Kelas turunan dari Hewan
+class Beruang(Hewan):
+    def bersuara(self):
+        return "Kok! Kok!"
+    
+    def memanjat(self):
+        return f"{self._nama} sedang memanjat pohon"
+
+class Monyet(Hewan):
+    def bersuara(self):
+        return "Wooo... Wooo"
+    
+    def makan(self):
+        return f"{self._nama} sedang makan pisang"
+
+class Burung(Hewan):
+    def bersuara(self):
+        return "Cuit! Cuit! Cuit!"
+    
+    def terbang(self):
+        return f"{self._nama} sedang terbang tinggi!"
+
+#Program utama untuk mengelola hewan
+def main():
+    try:
+        beruang = Beruang("Ursus", 15)
+        monyet = Monyet("Tarsius", 7)
+        burung = Burung("Tweety", 5)
+        
+        daftar_hewan = [beruang, monyet, burung]
+        
+        for hewan in daftar_hewan:
+            print(hewan.info())
+            print("Suara:", hewan.bersuara())
+            if isinstance(hewan, Beruang):
+                print(hewan.memanjat())
+            elif isinstance(hewan, Monyet):
+                print(hewan.makan())
+            elif isinstance(hewan, Burung):
+                print(hewan.terbang())
+            print()
+
+    except ValueError as e:
+        print("Kesalahan:", e)
+    except TypeError:
+        print("Kesalahan:", pesan_error_tipe)
+
+if __name__ == "__main__":
+    main()
