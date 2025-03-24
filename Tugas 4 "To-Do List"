@@ -1,0 +1,63 @@
+def tampilkan_menu():
+    print("\nMenu Manajemen Daftar Tugas:")
+    print("1. Tambah Tugas")
+    print("2. Hapus Tugas")
+    print("3. Tampilkan Daftar Tugas")
+    print("4. Keluar")
+
+def tambah_tugas(todo_list):
+    try:
+        tugas = input("Masukkan tugas: ").strip()
+        if not tugas:
+            raise ValueError("Tugas tidak boleh kosong")
+        todo_list.append(tugas)
+        print(f"Tugas '{tugas}' telah ditambahkan")
+    except ValueError as e:
+        print(f"Error: {e}")
+
+def hapus_tugas(todo_list):
+    try:
+        if not todo_list:
+            raise ValueError("Daftar tugas kosong. Tidak ada yang bisa dihapus")
+        
+        indeks = int(input("Masukkan nomor tugas yang ingin dihapus: ")) - 1
+        if indeks < 0 or indeks >= len(todo_list):
+            raise IndexError("Nomor tugas tidak valid")
+        
+        tugas = todo_list.pop(indeks)
+        print(f"Tugas '{tugas}' telah dihapus.")
+    except ValueError:
+        print("Input tidak valid. Harap masukkan angka yang benar")
+    except IndexError as e:
+        print(f"Error: {e}")
+
+def tampilkan_tugas(todo_list):
+    if not todo_list:
+        print("Daftar tugas kosong.")
+    else:
+        print("\nDaftar Tugas:")
+        for i, tugas in enumerate(todo_list, 1):
+            print(f"{i}. {tugas}")
+
+def main():
+    todo_list = []
+    while True:
+        tampilkan_menu()
+        try:
+            pilihan = int(input("Pilih menu (1-4): "))
+            if pilihan == 1:
+                tambah_tugas(todo_list)
+            elif pilihan == 2:
+                hapus_tugas(todo_list)
+            elif pilihan == 3:
+                tampilkan_tugas(todo_list)
+            elif pilihan == 4:
+                print("Keluar dari program.")
+                break
+            else:
+                print("Pilihan tidak valid. Harap pilih menu 1-4")
+        except ValueError:
+            print("Input tidak valid. Harap masukkan angka")
+
+if __name__ == "__main__":
+    main()
