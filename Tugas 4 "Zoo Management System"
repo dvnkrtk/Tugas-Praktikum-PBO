@@ -11,7 +11,7 @@ class Hewan(ABC):
         
         self._nama = nama  #Enkapsulasi
         self._usia = usia  #Enkapsulasi
-#Abstractmethod
+@Abstractmethod
     def bersuara(self):
         pass
     
