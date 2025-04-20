@@ -1,0 +1,168 @@
+import tkinter as tk
+from tkinter import messagebox
+import json
+from datetime import datetime
+
+class DiaryApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Catatan Harian")
+        self.root.geometry("500x400")
+        self.notes_file = "catatan.json"
+        self.notes = self.load_notes()
+        self.selected_note = None
+
+        self.setup_ui()
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def setup_ui(self):
+        # Menu
+        menu = tk.Menu(self.root)
+        self.root.config(menu=menu)
+        file_menu = tk.Menu(menu, tearoff=0)
+        file_menu.add_command(label="Keluar", command=self.on_close)
+        menu.add_cascade(label="File", menu=file_menu)
+        help_menu = tk.Menu(menu, tearoff=0)
+        help_menu.add_command(label="Tentang", command=lambda: messagebox.showinfo("Tentang", "Catatan Harian v2.0"))
+        menu.add_cascade(label="Bantuan", menu=help_menu)
+
+        # Input Frame
+        input_frame = tk.LabelFrame(self.root, text="Input Catatan")
+        input_frame.pack(fill="x", padx=10, pady=5)
+
+        tk.Label(input_frame, text="Judul:").grid(row=0, column=0, sticky="w")
+        self.title_entry = tk.Entry(input_frame)
+        self.title_entry.grid(row=0, column=1, sticky="ew", padx=5, pady=2)
+
+        tk.Label(input_frame, text="Isi:").grid(row=1, column=0, sticky="nw")
+        self.content_text = tk.Text(input_frame, height=8, wrap="word")
+        self.content_text.grid(row=1, column=1, sticky="nsew", padx=5, pady=2)
+
+        btn_frame = tk.Frame(input_frame)
+        btn_frame.grid(row=2, column=1, sticky="e", pady=5)
+        tk.Button(btn_frame, text="Tambah", command=self.add_note).pack(side="left", padx=5)
+        self.edit_btn = tk.Button(btn_frame, text="Edit", command=self.edit_note, state="disabled")
+        self.edit_btn.pack(side="left", padx=5)
+
+        # List Frame
+        list_frame = tk.LabelFrame(self.root, text="Daftar Catatan")
+        list_frame.pack(fill="both", expand=True, padx=10, pady=5)
+
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side="right", fill="y")
+
+        self.notes_list = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, selectmode="single")
+        self.notes_list.pack(fill="both", expand=True)
+        self.notes_list.bind("<<ListboxSelect>>", self.select_note)
+        scrollbar.config(command=self.notes_list.yview)
+
+        # Tombol Hapus
+        tk.Button(self.root, text="Hapus Catatan", command=self.delete_note).pack(side="right", padx=10, pady=5)
+
+        self.update_list()
+
+    def load_notes(self):
+        try:
+            with open(self.notes_file, "r") as f:
+                data = json.load(f)
+                return {k: (v if isinstance(v, dict) else {"content": v, "timestamp": "", "created": ""}) for k, v in data.items()}
+        except:
+            return {}
+
+    def save_notes(self):
+        with open(self.notes_file, "w") as f:
+            json.dump(self.notes, f, indent=2)
+
+    def clear_fields(self):
+        self.title_entry.delete(0, "end")
+        self.content_text.delete("1.0", "end")
+
+    def update_list(self):
+        self.notes_list.delete(0, "end")
+        for title in sorted(self.notes, key=lambda x: self.notes[x]["created"], reverse=True):
+            ts = self.notes[title]["timestamp"]
+            self.notes_list.insert("end", f"{title} [{ts}]")
+
+    def add_note(self):
+        title = self.title_entry.get().strip()
+        content = self.content_text.get("1.0", "end-1c").strip()
+        if not title or not content:
+            return messagebox.showerror("Error", "Judul dan isi tidak boleh kosong!")
+
+        now = datetime.now()
+        self.notes[title] = {
+            "content": content,
+            "timestamp": now.strftime("%d/%m/%Y %H:%M"),
+            "created": now.isoformat()
+        }
+        self.clear_fields()
+        self.update_list()
+        messagebox.showinfo("Sukses", "Catatan ditambahkan!")
+
+    def select_note(self, event):
+        selection = self.notes_list.curselection()
+        if not selection:
+            return
+        title = self.notes_list.get(selection[0]).split("[")[0].strip()
+        if title in self.notes:
+            self.selected_note = title
+            self.title_entry.delete(0, "end")
+            self.title_entry.insert(0, title)
+            self.content_text.delete("1.0", "end")
+            self.content_text.insert("1.0", self.notes[title]["content"])
+            self.edit_btn.config(state="normal")
+
+    def edit_note(self):
+        if not self.selected_note:
+            return
+        note = self.notes[self.selected_note]
+
+        def save():
+            new_title = title_entry.get().strip()
+            new_content = content_text.get("1.0", "end-1c").strip()
+            if not new_title or not new_content:
+                return messagebox.showerror("Error", "Judul dan isi tidak boleh kosong!")
+
+            if new_title != self.selected_note:
+                self.notes[new_title] = self.notes.pop(self.selected_note)
+            self.notes[new_title].update({
+                "content": new_content,
+                "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M")
+            })
+            edit_win.destroy()
+            self.clear_fields()
+            self.update_list()
+            messagebox.showinfo("Sukses", "Catatan diperbarui!")
+
+        edit_win = tk.Toplevel(self.root)
+        edit_win.title("Edit Catatan")
+        tk.Label(edit_win, text="Judul:").pack()
+        title_entry = tk.Entry(edit_win)
+        title_entry.pack(fill="x", padx=10)
+        title_entry.insert(0, self.selected_note)
+
+        tk.Label(edit_win, text="Isi:").pack()
+        content_text = tk.Text(edit_win, wrap="word")
+        content_text.pack(fill="both", expand=True, padx=10)
+        content_text.insert("1.0", note["content"])
+
+        tk.Button(edit_win, text="Simpan", command=save).pack(pady=5)
+
+    def delete_note(self):
+        if not self.selected_note:
+            return messagebox.showwarning("Peringatan", "Pilih catatan terlebih dahulu!")
+        if messagebox.askyesno("Konfirmasi", f"Hapus catatan '{self.selected_note}'?"):
+            del self.notes[self.selected_note]
+            self.selected_note = None
+            self.clear_fields()
+            self.update_list()
+            self.edit_btn.config(state="disabled")
+
+    def on_close(self):
+        self.save_notes()
+        self.root.destroy()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = DiaryApp(root)
+    root.mainloop()
